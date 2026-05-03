@@ -17,41 +17,51 @@ int main() {
 		printf("Error: File could not be opened\n");
 	}
 
+	//init pid arr and count
+	pid_t* pids = NULL;
+	int count = 0;
+
 	//run thru file line by line, split each line into args
 	while ((read = getline(&line, &len, input)) != -1) {
-		printf("%s", line);
 		fflush(stdout);
 		command_line cmd = get_args(line);
+
+		//fork a new pid for each process
 		pid_t pid = fork();
+		//fail if fork fails
 		if (pid < 0) {
 			perror("fork failed");
 		}
+		//free memory, exit with status 1 if execvp fails
 		else if (pid == 0) {
 			execvp(cmd.command_list[0], cmd.command_list);
 			perror("execvp failed");
 			fclose(input);
 			free_cmd(&cmd);
 			free(line);
-			line = NULL;
-			len = 0;
+			free(pids);
 			exit(1);
 		}
+		//if execvp is succesful, print that it has been launched, add it to pid array
 		else {
-			int status;
-			printf("Parent: waiting for child %d to finish...\n", pid);
-			waitpid(pid, &status, 0);
-			if (WIFEXITED(status)) {
-				printf("Parent: Child exited with status %d\n", WEXITSTATUS(status));
-			}
-			free_cmd(&cmd);
-		}	
+			printf("Launching: [%d]: %s\n", pid, line);
+			pids = realloc(pids, (count + 1) * sizeof(pid_t));
+			pids[count] = pid;
+			count++;
+		}
 		free_cmd(&cmd);
-		printf("\n");
-		free(line);
-		line = NULL;
-		len = 0;
 	}
+	//go thru each process, wait it, and print it with status
+	for (int i = 0; i < count; i++) {
+		int status;
+		waitpid(pids[i], &status, 0);
+		if (WIFEXITED(status)) {
+			printf("Finished [%d]: exited with status %d\n", pids[i], WEXITSTATUS(status));
+			printf("\n");
+		}
+	}	
 	fclose(input);
 	free(line);
-	return 0;
+	free(pids);
+	exit(0);
 }
