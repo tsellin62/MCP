@@ -20,11 +20,31 @@ int main() {
 	//run thru file line by line, split each line into args
 	while ((read = getline(&line, &len, input)) != -1) {
 		printf("%s", line);
+		fflush(stdout);
 		command_line cmd = get_args(line);
-		for (int i = 0; i < cmd.num_token; i++) {
-			cmd.command_list[i] = strip(cmd.command_list[i]);
-			printf("%s, ", cmd.command_list[i]);
+		pid_t pid = fork();
+		if (pid < 0) {
+			perror("fork failed");
 		}
+		else if (pid == 0) {
+			execvp(cmd.command_list[0], cmd.command_list);
+			perror("execvp failed");
+			fclose(input);
+			free_cmd(&cmd);
+			free(line);
+			line = NULL;
+			len = 0;
+			exit(1);
+		}
+		else {
+			int status;
+			printf("Parent: waiting for child %d to finish...\n", pid);
+			waitpid(pid, &status, 0);
+			if (WIFEXITED(status)) {
+				printf("Parent: Child exited with status %d\n", WEXITSTATUS(status));
+			}
+			free_cmd(&cmd);
+		}	
 		free_cmd(&cmd);
 		printf("\n");
 		free(line);
