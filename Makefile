@@ -37,4 +37,4 @@ cpubound: cpubound.c
 	$(CC) $(CFLAGS) -o cpubound cpubound.c
 
 clean:
-	rm -f *.o part1 part2 part3 iobound cpubound
+	rm -f *.o part1 part2 part3 part4 iobound cpubound
