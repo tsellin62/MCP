@@ -140,17 +140,28 @@ void sigalrm_handler(int sig) {
     alarm(1);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     char* line = NULL;
     size_t len = 0;
     ssize_t read;
 
+	if (argc != 3) {
+		printf("Invalid use: incorrect number of parameters\n");
+		return 1;
+	}
+	if (strcmp(argv[1], "-f") != 0) {
+		printf("Invalid use: incorrect number of parameters\n");
+		return 1;
+	}
+
     //open file for reading
-    FILE* input = fopen("input.txt", "r");
+    FILE* input = fopen(argv[2], "r");
     if (input == NULL) {
         perror("fopen failed");
         exit(1);
     }
+	printf("=====================================================\n");
+	printf("Part 4\n");
 
     sigset_t set;
     sigemptyset(&set);
