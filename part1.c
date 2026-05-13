@@ -6,16 +6,26 @@
 #include <sys/wait.h>
 #include "string_parser.h"
 
-int main() {
+int main(int argc, char* argv[]) {
 	char* line = NULL;
 	size_t len = 0;
 	ssize_t read;
 
+	if (argc != 3) {
+		printf("Invalid use: incorrect number of parameters\n");
+		return 1;
+	}
+	if (strcmp(argv[1], "-f") != 0) {
+		printf("Invalid use: incorrect number of parameters\n");
+	}
+	
 	//open file for reading
-	FILE* input = fopen("input.txt", "r");
+	FILE* input = fopen(argv[2], "r");
 	if (input == NULL) {
 		printf("Error: File could not be opened\n");
 	}
+	printf("=====================================================\n");
+	printf("Part 1\n");
 
 	//init pid arr and count
 	pid_t* pids = NULL;
